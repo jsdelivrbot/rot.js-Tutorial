@@ -29,7 +29,7 @@ var Game = {
 
     _generateBoxes: function(freeCells) {
         for (var i=0;i<10;i++) {
-            var index = Math.floor(ROT.RNG.getuniform() * freeCells.length);
+            var index = Math.floor(ROT.RNG.getUniform() * freeCells.length);
             var key = freeCells.splice(index, 1)[0];
             this.map[key] = "*";
         }
@@ -45,4 +45,3 @@ var Game = {
     }
 };
 
-Game.init();
