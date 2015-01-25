@@ -22,11 +22,11 @@ var Game = {
         var freeCells = [];
 
         var digCallback = function(x, y, value) {
-            if (value) { return;} /* do not store wals */
+            if (value) { return; } /* do not store walls */
 
             var key = x+","+y;
-            freeCells.push(key);
             this.map[key] = ".";
+            freeCells.push(key);
         }
         digger.create(digCallback.bind(this));
 
@@ -38,7 +38,7 @@ var Game = {
     _createPlayer: function(freeCells) {
         var index = Math.floor(ROT.RNG.getUniform() * freeCells.length);
         var key = freeCells.splice(index, 1)[0];
-        var parts = key.split(".");
+        var parts = key.split(",");
         var x = parseInt(parts[0]);
         var y = parseInt(parts[1]);
         this.player = new Player(x, y);
@@ -88,13 +88,14 @@ Player.prototype.handleEvent = function(e) {
     keyMap[36] = 7;
 
     var code = e.keycode;
-
+    /* one of the numpad directions? */
     if (!(code in keyMap)) { return; }
 
-    var diff = ROT.DIRS[8][keyMap[code]];
+
+    /* is there a free space? */
+    var dir = ROT.DIRS[8][keyMap[code]];
     var newX = this._x + diff[0];
     var newY = this._y + diff[1];
-
     var newKey = newX + "," + newY;
     if (!(newKey in Game.map)) { return; } /* cannot move in this direction */
 
@@ -106,7 +107,7 @@ Player.prototype.handleEvent = function(e) {
     Game.engine.unlock();
 };
 
-Player.protoype._draw = function() {
+Player.prototype._draw = function() {
     Game.display.draw(this._x, this._y, "@", "#ff0");
 };
 
