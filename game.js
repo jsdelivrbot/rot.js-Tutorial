@@ -151,7 +151,7 @@ Pedro.prototype.act = function() {
 
     var passableCallback = function(x, y) {
         return (x+","+y in Game.map);
-    };
+    }
     var astar = new ROT.Path.AStar(x, y, passableCallback, {topology:4});
 
     var path = [];
