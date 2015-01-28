@@ -3,6 +3,7 @@ var Game = {
     map: {},
     engine: null,
     player: null,
+    pineapple: null,
 
     init: function() {
         this.display = new ROT.Display();
@@ -49,6 +50,7 @@ var Game = {
             var index = Math.floor(ROT.RNG.getUniform() * freeCells.length);
             var key = freeCells.splice(index, 1)[0];
             this.map[key] = "*";
+            if (!i) { this.pineapple = key; } /*first box contains a pineapple */
         }
     },
 
@@ -67,7 +69,6 @@ var Player = function(x, y) {
     this._x = x;
     this._y = y;
     this._draw();
-
 };
 
 Player.prototype.act = function() {
@@ -77,6 +78,12 @@ Player.prototype.act = function() {
 };
 
 Player.prototype.handleEvent = function(e) {
+    var code = e.keyCode;
+    if (code == 13 || code == 32) {
+        this._checkBox();
+        return;
+    };
+
     var keyMap = {};
     keyMap[38] = 0;
     keyMap[33] = 1;
@@ -87,10 +94,8 @@ Player.prototype.handleEvent = function(e) {
     keyMap[37] = 6;
     keyMap[36] = 7;
 
-    var code = e.keyCode;
     /* one of the numpad directions? */
-    if (!(code in keyMap)) { return; }
-
+    if (!(code in keyMap)) { return; };
 
     /* is there a free space? */
     var dir = ROT.DIRS[8][keyMap[code]];
@@ -107,8 +112,20 @@ Player.prototype.handleEvent = function(e) {
     Game.engine.unlock();
 };
 
+Player.prototype._checkBox = function() {
+    var key = this._x + "," + this._y;
+    if (Game.map[key] != "*") {
+        alert("There is no box here!");
+    } else if (key == Game.pineapple) {
+        alert("Woo! You found a pineapple and won the game.");
+        Game.engine.lock();
+        window.removeEventListener("keydown", this);
+    } else {
+        alert("This box is empty :(");
+    };
+};
+
 Player.prototype._draw = function() {
     Game.display.draw(this._x, this._y, "@", "#ff0");
 };
-
 
