@@ -3,16 +3,18 @@ var Game = {
     map: {},
     engine: null,
     player: null,
+    pedro: null,
     pineapple: null,
 
     init: function() {
-        this.display = new ROT.Display();
+        this.display = new ROT.Display({spacing:1.1});
         document.body.appendChild(this.display.getContainer());
 
         this._generateMap();
 
         var scheduler = new ROT.Scheduler.Simple();
         scheduler.add(this.player, true);
+        scheduler.add(this.pedro, true);
 
         this.engine = new ROT.Engine(scheduler);
         this.engine.start();
@@ -33,16 +35,18 @@ var Game = {
 
         this._generateBoxes(freeCells);
         this._drawWholeMap();
-        this._createPlayer(freeCells);
+
+        this.player = this._createBeing(Player, freeCells);
+        this.pedro = this._createBeing(Pedro, freeCells)
     },
 
-    _createPlayer: function(freeCells) {
+    _createBeing: function(what, freeCells) {
         var index = Math.floor(ROT.RNG.getUniform() * freeCells.length);
         var key = freeCells.splice(index, 1)[0];
         var parts = key.split(",");
         var x = parseInt(parts[0]);
         var y = parseInt(parts[1]);
-        this.player = new Player(x, y);
+        return new what(x, y);
     },
 
     _generateBoxes: function(freeCells) {
@@ -70,6 +74,10 @@ var Player = function(x, y) {
     this._y = y;
     this._draw();
 };
+
+Player.prototype.getSpeed = function() { return 100; }
+Player.prototype.getX = function() { return this._x; }
+Player.prototype.getY = function() { return this._y; }
 
 Player.prototype.act = function() {
     Game.engine.lock();
@@ -129,3 +137,42 @@ Player.prototype._draw = function() {
     Game.display.draw(this._x, this._y, "@", "#ff0");
 };
 
+var Pedro = function(x, y) {
+    this._x = x;
+    this._y = y;
+    this._draw();
+};
+
+Pedro.prototype.getSpeed = function() { return 100; }
+
+Pedro.prototype.act = function() {
+    var x = Game.player.getX();
+    var y = Game.player.getY();
+
+    var passableCallback = function(x, y) {
+        return (x+","+y in Game.map);
+    };
+    var astar = new ROT.Path.AStar(x, y, passableCallback, {topology:4});
+
+    var path = [];
+    var pathCallback = function(x, y) {
+        path.push([x, y]);
+    };
+
+    path.shift();
+    if (path.length == 1) {
+        Game.engine.lock();
+        alert("Game over - you were captured by Pedro!");
+    } else {
+        x = path[0][0];
+        y = path[0][1];
+        Game.display.draw(this._x, this._y, Game.map[this._x+","+this._y]);
+        this._x = x;
+        this._y = y;
+        this._draw();
+    }
+};
+
+Pedro.prototype._draw = function () {
+    Game.display.draw(this._x, this._y, "P", "red");
+};
