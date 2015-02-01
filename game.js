@@ -158,6 +158,7 @@ Pedro.prototype.act = function() {
     var pathCallback = function(x, y) {
         path.push([x, y]);
     };
+    astar.compute(this._x, this._y, pathCallback);
 
     path.shift();
     if (path.length == 1) {
